@@ -22,6 +22,7 @@ protected:
         vec3 originalPosition;
         vec3 displacedPosition;
         vec3 normal;
+        vec2 texCoord;
     };
     vertex* vertices;
     unsigned int* indices;
@@ -37,8 +38,8 @@ protected:
 #pragma endregion
 
 #pragma region Parameter Variables
-    const float g = 9.81;     //gravitational constant
-    const float lambda = 1.5;
+    float g;                  //gravitational constant
+    float lambda;
     int N, M;                 //grid dimensions
     int NS, MS;
     int L;                    //patch dimensions L = Lx = Lz
@@ -55,7 +56,7 @@ protected:
     GLuint vbo, vbo_vertices, vbo_indices, tbo, texCoords;
     GLuint vloc, cloc, tloc, nloc;
     GLuint modelLoc, projectionLoc, viewLoc, modelViewInverseTranspose;
-    GLfloat waveTime = 0.0, waveHeight = 3.0, waveFreq = 0.1;
+    GLfloat waveTime, waveHeight, waveFreq;
 #pragma endregion
 
 #pragma region Helper Methods

@@ -6,7 +6,7 @@
 #pragma region Setup
 Ocean::Ocean(int gridX, int gridZ, int patchLength, float period, float phillipA, float suppressor, vec3 windDir) 
 : N(gridX), M(gridZ), L(patchLength), T(period), PhA(phillipA), Suppressor(suppressor), 
-WindDir(windDir), Time(0), numIndices(0)
+WindDir(windDir), Time(0), numIndices(0), g(9.81), lambda(1.5), waveTime(0.0), waveHeight(2.0), waveFreq(0.1)
 {
     printf("GL %s, GLSL %s\n", glGetString(GL_VERSION), glGetString(GL_SHADING_LANGUAGE_VERSION));
 
@@ -31,10 +31,10 @@ WindDir(windDir), Time(0), numIndices(0)
     InitVertices();
     InitIndices();
     InitAmplitudeNought();
-
+    CheckVerts();
     GenerateCoefficients();
     GenerateVertices();
-    CheckVerts();
+    //CheckVerts();
     SetupRender();
 }
 Ocean::~Ocean()
@@ -45,8 +45,8 @@ void Ocean::InitVertices()
 {
     int nAdjust = N / 2;       //Tessendorf model bounds -N/2 < i < N/2
     int mAdjust = M / 2;       //Tessendorf model bounds -M/2 < j < M/2
-    float xAdjust = L / N;
-    float zAdjust = L / M;
+    float xAdjust = (float) L / N;
+    float zAdjust = (float) L / M;
 
 #if (TILE)
     for (int i = 0; i <= N; ++i)
@@ -57,6 +57,8 @@ void Ocean::InitVertices()
             vertices[arrIndex].originalPosition[0] = vertices[arrIndex].displacedPosition[0] = (i - nAdjust) * xAdjust;
             vertices[arrIndex].originalPosition[1] = vertices[arrIndex].displacedPosition[1] = 0;
             vertices[arrIndex].originalPosition[2] = vertices[arrIndex].displacedPosition[2] = (j - mAdjust) * zAdjust;
+            vertices[arrIndex].texCoord[0] = (float) j / M;
+            vertices[arrIndex].texCoord[1] = (float) i / N;
         }
     }
 #else
@@ -218,18 +220,6 @@ void Ocean::ComputeIFFT(complex<float>* coefficients, int dimX, int dimZ)
     fftwf_destroy_plan(transform);
     reinterpret_cast<complex<float>*>(coefficients);
 
-
-    //fftwf_plan transformAmps = fftwf_plan_dft_2d(M, N, reinterpret_cast<fftwf_complex*>(Amplitudes), 
-    //    reinterpret_cast<fftwf_complex*>(Amplitudes), FFTW_BACKWARD, FFTW_ESTIMATE);
-    //fftwf_execute(transformAmps);
-    //fftwf_destroy_plan(transformAmps);
-    //reinterpret_cast<complex<float>*>(Amplitudes);
-
-    //fftwf_plan transformSlopes = fftwf_plan_dft_2d(M, N, reinterpret_cast<fftwf_complex*>(SlopeX),
-    //    reinterpret_cast<fftwf_complex*>(SlopeX), FFTW_BACKWARD, FFTW_ESTIMATE);
-    //fftwf_execute(transformSlopes);
-    //fftwf_destroy_plan(transformSlopes);
-    //reinterpret_cast<complex<float>*>(Slopes);
 }
 void Ocean::Tile(int arrIndex, int vertIndex, int tileIndex)
 {
@@ -329,11 +319,12 @@ void Ocean::SetupRender()
     glBufferData(GL_ELEMENT_ARRAY_BUFFER, numIndices * sizeof(unsigned int), indices, GL_DYNAMIC_DRAW);
 
     //Load shaders
-    program = init_program("Shaders\\vshader.glsl", "Shaders\\fshader.glsl");
+    program = init_program("Shaders\\water_vshader.glsl", "Shaders\\water_fshader.glsl");
     glUseProgram(program);
 
     //Load texture
     //tbo = loadTexture("Textures\\ocean\\Ocean_water_surface_512.jpg");
+    tbo = loadTexture("Textures\\sky\\bluecloud_lf.jpg");
 
     //Get attribute and uniform locations
     vloc = glGetAttribLocation(program, "vPosition");
@@ -341,8 +332,8 @@ void Ocean::SetupRender()
     modelLoc = glGetUniformLocation(program, "Model");
     projectionLoc = glGetUniformLocation(program, "Projection");
     viewLoc = glGetUniformLocation(program, "View");
-    cloc = glGetUniformLocation(program, "Color");
-    //tloc - glGetUniformLocation(program, "vTexCoord");
+    //cloc = glGetUniformLocation(program, "Color");
+    tloc - glGetUniformLocation(program, "vTexCoord");
 
     glUniform4fv(glGetUniformLocation(program, "LightPosition"), 1, vec4(3 * L / 4, 40.0, -3 * L / 4, 0.0));
 
@@ -368,9 +359,6 @@ unsigned int Ocean::loadTexture(char* filename)
 
     //load SDL surface
     SDL_Surface *img;
-    //SDL_RWops *rwop;
-    //rwop = SDL_RWFromFile(filename, "rb");
-    //img = IMG_LoadJPG_RW(rwop);
     img = IMG_Load(filename);
 
     if (!img)
@@ -411,7 +399,7 @@ void Ocean::draw(mat4 viewMatrix)
     glUniformMatrix4fv(modelLoc, 1, GL_TRUE, modelMatrix);
     glUniformMatrix4fv(viewLoc, 1, GL_TRUE, viewMatrix);
     glUniformMatrix4fv(projectionLoc, 1, GL_TRUE, projectionMatrix);
-    glUniform4fv(cloc, 1, vec4(0.18, 0.55, 0.34, 0.0));
+    //glUniform4fv(cloc, 1, vec4(0.18, 0.55, 0.34, 0.0));
 
     glBindBuffer(GL_ARRAY_BUFFER, vbo_vertices);
 
@@ -421,11 +409,11 @@ void Ocean::draw(mat4 viewMatrix)
     glVertexAttribPointer(vloc, 3, GL_FLOAT, GL_FALSE, sizeof(vertex), (const GLfloat*)(sizeof(GLfloat)* 3));
     glEnableVertexAttribArray(nloc);
     glVertexAttribPointer(nloc, 3, GL_FLOAT, GL_FALSE, sizeof(vertex), (const GLfloat *)(sizeof(GLfloat)* 6));
-    //glEnableVertexAttribArray(tloc);
-    //glVertexAttribPointer(tloc, 3, GL_FLOAT, GL_FALSE, sizeof(vertex), (const GLfloat*)(sizeof(GLfloat)* 3));
+    glEnableVertexAttribArray(tloc);
+    glVertexAttribPointer(tloc, 2, GL_FLOAT, GL_FALSE, sizeof(vertex), (const GLfloat*)(sizeof(GLfloat)* 9));
 
     glBindBuffer(GL_ELEMENT_ARRAY_BUFFER, vbo_indices);
-    //glBindTexture(GL_TEXTURE_2D, tbo);
+    glBindTexture(GL_TEXTURE_2D, tbo);
     for (int i = 0; i < 3; ++i)
         for (int j = 0; j < 3; ++j)
         {
@@ -457,6 +445,7 @@ void Ocean::step()
 #pragma region Testing
 void Ocean::CheckVerts()
 {
+    FILE *uv = fopen("uv.txt", "w");
     FILE *verts = fopen("vertices.txt", "w");
     FILE *ind = fopen("indices.txt", "w");
     fprintf(verts, "%d\n", numIndices);
@@ -468,6 +457,11 @@ void Ocean::CheckVerts()
         fprintf(verts, "%d: %f %f %f\n", j, vertices[j].displacedPosition[0],
             vertices[j].displacedPosition[1], vertices[j].displacedPosition[2]);
         if ((i + 1) % 3 == 0) fprintf(verts, "\n");
+    }
+
+    for (int i = 0; i < NS * MS; ++i)
+    {
+        fprintf(uv, "%d: %f %f\n", i, vertices[i].texCoord[0], vertices[i].texCoord[1]);
     }
 }
 #pragma endregion
