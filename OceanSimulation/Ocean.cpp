@@ -6,7 +6,7 @@
 #pragma region Setup
 Ocean::Ocean(int gridX, int gridZ, int patchLength, float period, float phillipA, float suppressor, vec3 windDir) 
 : N(gridX), M(gridZ), L(patchLength), T(period), PhA(phillipA), Suppressor(suppressor), 
-WindDir(windDir), Time(0), numIndices(0), g(9.81), lambda(1.5), waveTime(0.0), waveHeight(2.0), waveFreq(0.1)
+WindDir(windDir), Time(10), numIndices(0), g(9.81), lambda(1.5)
 {
     printf("GL %s, GLSL %s\n", glGetString(GL_VERSION), glGetString(GL_SHADING_LANGUAGE_VERSION));
 
@@ -57,8 +57,8 @@ void Ocean::InitVertices()
             vertices[arrIndex].originalPosition[0] = vertices[arrIndex].displacedPosition[0] = (i - nAdjust) * xAdjust;
             vertices[arrIndex].originalPosition[1] = vertices[arrIndex].displacedPosition[1] = 0;
             vertices[arrIndex].originalPosition[2] = vertices[arrIndex].displacedPosition[2] = (j - mAdjust) * zAdjust;
-            vertices[arrIndex].texCoord[0] = (float) j / M;
-            vertices[arrIndex].texCoord[1] = (float) i / N;
+            vertices[arrIndex].texCoord[0] = (float) i / N;
+            vertices[arrIndex].texCoord[1] = (float) j / M;
         }
     }
 #else
@@ -70,6 +70,8 @@ void Ocean::InitVertices()
             vertices[arrIndex].originalPosition[0] = vertices[arrIndex].displacedPosition[0] = (i - nAdjust) * xAdjust;
             vertices[arrIndex].originalPosition[1] = vertices[arrIndex].displacedPosition[1] = 0;
             vertices[arrIndex].originalPosition[2] = vertices[arrIndex].displacedPosition[2] = (j - mAdjust) * zAdjust;
+            vertices[arrIndex].texCoord[0] = (float)i / (N-1);
+            vertices[arrIndex].texCoord[1] = (float)j / (M-1);
         }
     }
 #endif
@@ -110,7 +112,7 @@ void Ocean::InitAmplitudeNought()
 {
     int n = N / 2;       //Tessendorf model bounds -N/2 < i < N/2
     int m = M / 2;       //Tessendorf model bounds -M/2 < j < M/2
-    float waveVecAdjust = 2 * M_PI / L;
+    float waveVecAdjust = (float) 2 * M_PI / L;
 
     for (int i = 0; i <= N; ++i)
     {
@@ -128,8 +130,8 @@ void Ocean::InitAmplitudeNought()
 #pragma region Height Field Helper Functions
 vec3 Ocean::WaveVector(int n, int m)
 {
-    float kx = (2 * M_PI * n) / L;
-    float kz = (2 * M_PI * m) / L;
+    float kx = (float) (2 * M_PI * n) / L;
+    float kz = (float) (2 * M_PI * m) / L;
     return vec3(kx, 0, kz);
 }
 float Ocean::Dispersion(vec3 waveVec)
@@ -146,9 +148,9 @@ float Ocean::PhillipSpectrum(vec3 waveVec)
     if (waveNumber < Suppressor) return 0.0;
 
     float v = WindSpeed;
-    float maxWave = pow(v, 2) / g;
+    float maxWave = (float) pow(v, 2) / g;
 
-    float exponential = exp(-1 / pow((waveNumber * maxWave), 2)) / pow(waveNumber, 4);
+    float exponential = exp((float) -1 / pow((waveNumber * maxWave), 2)) / pow(waveNumber, 4);
     float waveDotWind = pow(normalize(waveVec) * normalize(WindDir), 2);
     float suppression = exp(-pow(waveNumber, 2) * pow(Suppressor, 2));
 
@@ -161,7 +163,7 @@ complex<float> Ocean::FourierAmplitudeNought(vec3 waveVec)
     std::normal_distribution<float> gaussian(0.0, 1.0);
     complex<float> randomDraw(gaussian(generator), gaussian(generator));
 
-    complex<float> ampNought = randomDraw * sqrt(PhillipSpectrum(waveVec) / 2);
+    complex<float> ampNought = randomDraw * sqrt((float) PhillipSpectrum(waveVec) / 2);
     return ampNought;
 }
 complex<float> Ocean::FourierAmplitude(int n, int m, vec3 waveVec)
@@ -187,7 +189,7 @@ void Ocean::GenerateCoefficients()
 {
     int n = N / 2;       //Tessendorf model bounds -N/2 < i < N/2
     int m = M / 2;       //Tessendorf model bounds -M/2 < j < M/2
-    double waveVecAdjust = 2 * M_PI / L;
+    float waveVecAdjust = (float) 2 * M_PI / L;
 
     for (int i = 0; i < N; ++i)
     {
@@ -206,8 +208,8 @@ void Ocean::GenerateCoefficients()
             }
             else
             {
-                DispX[arrIndex] = Amplitudes[arrIndex] * complex<float>(0, (waveVec[0] / waveNumber));
-                DispZ[arrIndex] = Amplitudes[arrIndex] * complex<float>(0, (waveVec[2] / waveNumber));
+                DispX[arrIndex] = Amplitudes[arrIndex] * complex<float>(0, ((float) waveVec[0] / waveNumber));
+                DispZ[arrIndex] = Amplitudes[arrIndex] * complex<float>(0, ((float) waveVec[2] / waveNumber));
             }
         }
     }
@@ -323,27 +325,22 @@ void Ocean::SetupRender()
     glUseProgram(program);
 
     //Load texture
-    //tbo = loadTexture("Textures\\ocean\\Ocean_water_surface_512.jpg");
-    tbo = loadTexture("Textures\\sky\\bluecloud_lf.jpg");
+    glEnable(GL_TEXTURE_2D);
+    tbo = loadTexture("Textures\\ocean\\Ocean_water_surface_512.jpg");
+    //tbo = loadTexture("Textures\\ocean\\tile.jpg");
 
     //Get attribute and uniform locations
     vloc = glGetAttribLocation(program, "vPosition");
-    nloc = glGetAttribLocation(program, "vNormal");
+    //nloc = glGetAttribLocation(program, "vNormal");
     modelLoc = glGetUniformLocation(program, "Model");
     projectionLoc = glGetUniformLocation(program, "Projection");
     viewLoc = glGetUniformLocation(program, "View");
     //cloc = glGetUniformLocation(program, "Color");
     tloc - glGetUniformLocation(program, "vTexCoord");
 
-    glUniform4fv(glGetUniformLocation(program, "LightPosition"), 1, vec4(3 * L / 4, 40.0, -3 * L / 4, 0.0));
+    //glUniform4fv(glGetUniformLocation(program, "LightPosition"), 1, vec4(3 * L / 4, 40.0, -3 * L / 4, 0.0));
 
-    //glEnableVertexAttribArray(vloc);
-    //glVertexAttribPointer(vloc, 3, GL_FLOAT, GL_FALSE, sizeof(vertex), (const GLfloat*)(sizeof(GLfloat) * 3));
-    //glEnableVertexAttribArray(nloc);
-    //glVertexAttribPointer(nloc, 3, GL_FLOAT, GL_FALSE, sizeof(vertex), (const GLfloat *)(sizeof(GLfloat) * 6));
-
-    glEnable(GL_DEPTH_TEST);
-    glEnable(GL_TEXTURE_2D);
+    //glEnable(GL_DEPTH_TEST);
     //vec4 nightPurple = vec4(0.3, 0.2, 0.2, 1.0);
     //vec4 skyBlue = vec4(0.53, 0.81, 0.98, 1.0);
     //cam_position = vec3(3*L/4, 0.0, -3*L/4);
@@ -379,7 +376,6 @@ unsigned int Ocean::loadTexture(char* filename)
     glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_WRAP_S, GL_CLAMP_TO_EDGE);
     glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_WRAP_T, GL_CLAMP_TO_EDGE);
 
-    //glTexImage2D(GL_TEXTURE_2D, 0, GL_RGB, img->w, img->h, 0, GL_RGB, GL_UNSIGNED_SHORT_5_6_5, img->pixels);
     glTexImage2D(GL_TEXTURE_2D, 0, f, img->w, img->h, 0, texFormat, GL_UNSIGNED_BYTE, img->pixels);
     SDL_FreeSurface(img);
 
@@ -388,18 +384,17 @@ unsigned int Ocean::loadTexture(char* filename)
 
 void Ocean::draw(mat4 viewMatrix)
 {
+    glEnable(GL_DEPTH_TEST);
     glUseProgram(program);
-
-    //glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
+    glBindTexture(GL_TEXTURE_2D, tbo);
 
     mat4 modelMatrix = translation(vec3(0.0, -15.0, -60.0)) * xrotation(0.0) * yrotation(0.0);
-    //mat4 viewMatrix = view();
     mat4 projectionMatrix = perspective(45.0, 1.0, 0.1, 100.0);
 
     glUniformMatrix4fv(modelLoc, 1, GL_TRUE, modelMatrix);
     glUniformMatrix4fv(viewLoc, 1, GL_TRUE, viewMatrix);
     glUniformMatrix4fv(projectionLoc, 1, GL_TRUE, projectionMatrix);
-    //glUniform4fv(cloc, 1, vec4(0.18, 0.55, 0.34, 0.0));
+    glUniform4fv(cloc, 1, vec4(0.18, 0.55, 0.34, 0.0));
 
     glBindBuffer(GL_ARRAY_BUFFER, vbo_vertices);
 
@@ -407,29 +402,30 @@ void Ocean::draw(mat4 viewMatrix)
     glBufferSubData(GL_ARRAY_BUFFER, 0, (N + 1)*(M + 1)*sizeof(vertex), vertices);
     glEnableVertexAttribArray(vloc);
     glVertexAttribPointer(vloc, 3, GL_FLOAT, GL_FALSE, sizeof(vertex), (const GLfloat*)(sizeof(GLfloat)* 3));
-    glEnableVertexAttribArray(nloc);
-    glVertexAttribPointer(nloc, 3, GL_FLOAT, GL_FALSE, sizeof(vertex), (const GLfloat *)(sizeof(GLfloat)* 6));
+    //glEnableVertexAttribArray(nloc);
+    //glVertexAttribPointer(nloc, 3, GL_FLOAT, GL_FALSE, sizeof(vertex), (const GLfloat *)(sizeof(GLfloat)* 6));
     glEnableVertexAttribArray(tloc);
     glVertexAttribPointer(tloc, 2, GL_FLOAT, GL_FALSE, sizeof(vertex), (const GLfloat*)(sizeof(GLfloat)* 9));
 
     glBindBuffer(GL_ELEMENT_ARRAY_BUFFER, vbo_indices);
-    glBindTexture(GL_TEXTURE_2D, tbo);
     for (int i = 0; i < 3; ++i)
         for (int j = 0; j < 3; ++j)
         {
             modelMatrix = translation(vec3(L*i, 0.0, L*-j));
             glUniformMatrix4fv(modelLoc, 1, GL_TRUE, modelMatrix);
-            glPolygonMode(GL_FRONT_AND_BACK, GL_FILL);
+            //glPolygonMode(GL_FRONT_AND_BACK, GL_FILL);
             glDrawElements(GL_TRIANGLES, numIndices, GL_UNSIGNED_INT, 0);
         }
 #else
     glBufferSubData(GL_ARRAY_BUFFER, 0, N*M*sizeof(vertex), vertices);
     glEnableVertexAttribArray(vloc);
-    glVertexAttribPointer(vloc, 3, GL_FLOAT, GL_FALSE, sizeof(vertex), (const GLfloat*)(sizeof(GLfloat) * 3));
+    glVertexAttribPointer(vloc, 3, GL_FLOAT, GL_FALSE, sizeof(vertex), (const void *)(sizeof(GLfloat) * 3));
     glEnableVertexAttribArray(nloc);
-    glVertexAttribPointer(nloc, 3, GL_FLOAT, GL_FALSE, sizeof(vertex), (const GLfloat *)(sizeof(GLfloat) * 6));
-    glBindBuffer(GL_ELEMENT_ARRAY_BUFFER, vbo_indices);
+    glVertexAttribPointer(nloc, 3, GL_FLOAT, GL_FALSE, sizeof(vertex), (const void *)(sizeof(GLfloat)* 6));
+    glEnableVertexAttribArray(tloc);
+    glVertexAttribPointer(tloc, 2, GL_FLOAT, GL_FALSE, sizeof(vertex), (const void *)(sizeof(GLfloat)* 9));
 
+    glBindBuffer(GL_ELEMENT_ARRAY_BUFFER, vbo_indices);
     glPolygonMode(GL_FRONT_AND_BACK, GL_FILL);
     glDrawElements(GL_TRIANGLES, numIndices, GL_UNSIGNED_INT, 0);
 #endif

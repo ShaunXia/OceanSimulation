@@ -56,7 +56,6 @@ protected:
     GLuint vbo, vbo_vertices, vbo_indices, tbo, texCoords;
     GLuint vloc, cloc, tloc, nloc;
     GLuint modelLoc, projectionLoc, viewLoc, modelViewInverseTranspose;
-    GLfloat waveTime, waveHeight, waveFreq;
 #pragma endregion
 
 #pragma region Helper Methods
