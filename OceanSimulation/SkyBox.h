@@ -24,7 +24,7 @@ private:
     void initBasic();
     void initSkyMap();
     unsigned int loadTexture(char* filename);
-    void loadTex(char* filename, int face);
+    void loadTex(char* filename, GLenum face);
     void setupCubeMap();
 };
 

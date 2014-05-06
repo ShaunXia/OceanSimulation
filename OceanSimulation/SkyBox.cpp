@@ -9,45 +9,43 @@ struct vert
     GLfloat t[2];
 };
 
-static const float val = 1.f;
-
 static const struct vert verts[24] = {
 
     /* +X */
-    { { val, val, val }, { 1.f, 0.f, 0.f }, { 0.f, 0.f } },
-    { { val, -val, val }, { 1.f, 0.f, 0.f }, { 0.f, 1.f } },
-    { { val, -val, -val }, { 1.f, 0.f, 0.f }, { 1.f, 1.f } },
-    { { val, val, -val }, { 1.f, 0.f, 0.f }, { 1.f, 0.f } },
+    { { 1.f, 1.f, 1.f }, { 1.f, 0.f, 0.f }, { 0.f, 0.f } },
+    { { 1.f, -1.f, 1.f }, { 1.f, 0.f, 0.f }, { 0.f, 1.f } },
+    { { 1.f, -1.f, -1.f }, { 1.f, 0.f, 0.f }, { 1.f, 1.f } },
+    { { 1.f, 1.f, -1.f }, { 1.f, 0.f, 0.f }, { 1.f, 0.f } },
 
     /* -X */
-    { { -val, val, -val }, { -1.f, 0.f, 0.f }, { 0.f, 0.f } },
-    { { -val, -val, -val }, { -1.f, 0.f, 0.f }, { 0.f, 1.f } },
-    { { -val, -val, val }, { -1.f, 0.f, 0.f }, { 1.f, 1.f } },
-    { { -val, val, val }, { -1.f, 0.f, 0.f }, { 1.f, 0.f } },
+    { { -1.f, 1.f, -1.f }, { -1.f, 0.f, 0.f }, { 0.f, 0.f } },
+    { { -1.f, -1.f, -1.f }, { -1.f, 0.f, 0.f }, { 0.f, 1.f } },
+    { { -1.f, -1.f, 1.f }, { -1.f, 0.f, 0.f }, { 1.f, 1.f } },
+    { { -1.f, 1.f, 1.f }, { -1.f, 0.f, 0.f }, { 1.f, 0.f } },
 
     /* +Y */
-    { { -val, val, -val }, { 0.f, 1.f, 0.f }, { 0.f, 0.f } },
-    { { -val, val, val }, { 0.f, 1.f, 0.f }, { 0.f, 1.f } },
-    { { val, val, val }, { 0.f, 1.f, 0.f }, { 1.f, 1.f } },
-    { { val, val, -val }, { 0.f, 1.f, 0.f }, { 1.f, 0.f } },
+    { { -1.f, 1.f, -1.f }, { 0.f, 1.f, 0.f }, { 0.f, 0.f } },
+    { { -1.f, 1.f, 1.f }, { 0.f, 1.f, 0.f }, { 0.f, 1.f } },
+    { { 1.f, 1.f, 1.f }, { 0.f, 1.f, 0.f }, { 1.f, 1.f } },
+    { { 1.f, 1.f, -1.f }, { 0.f, 1.f, 0.f }, { 1.f, 0.f } },
 
     /* -Y */
-    { { -val, -val, val }, { 0.f, -1.f, 0.f }, { 0.f, 0.f } },
-    { { -val, -val, -val }, { 0.f, -1.f, 0.f }, { 0.f, 1.f } },
-    { { val, -val, -val }, { 0.f, -1.f, 0.f }, { 1.f, 1.f } },
-    { { val, -val, val }, { 0.f, -1.f, 0.f }, { 1.f, 0.f } },
+    { { -1.f, -1.f, 1.f }, { 0.f, -1.f, 0.f }, { 0.f, 0.f } },
+    { { -1.f, -1.f, -1.f }, { 0.f, -1.f, 0.f }, { 0.f, 1.f } },
+    { { 1.f, -1.f, -1.f }, { 0.f, -1.f, 0.f }, { 1.f, 1.f } },
+    { { 1.f, -1.f, 1.f }, { 0.f, -1.f, 0.f }, { 1.f, 0.f } },
 
     /* +Z */
-    { { -val, val, val }, { 0.f, 0.f, 1.f }, { 0.f, 0.f } },
-    { { -val, -val, val }, { 0.f, 0.f, 1.f }, { 0.f, 1.f } },
-    { { val, -val, val }, { 0.f, 0.f, 1.f }, { 1.f, 1.f } },
-    { { val, val, val }, { 0.f, 0.f, 1.f }, { 1.f, 0.f } },
+    { { -1.f, 1.f, 1.f }, { 0.f, 0.f, 1.f }, { 0.f, 0.f } },
+    { { -1.f, -1.f, 1.f }, { 0.f, 0.f, 1.f }, { 0.f, 1.f } },
+    { { 1.f, -1.f, 1.f }, { 0.f, 0.f, 1.f }, { 1.f, 1.f } },
+    { { 1.f, 1.f, 1.f }, { 0.f, 0.f, 1.f }, { 1.f, 0.f } },
 
     /* -Z */
-    { { val, val, -val }, { 0.f, 0.f, -1.f }, { 0.f, 0.f } },
-    { { val, -val, -val }, { 0.f, 0.f, -1.f }, { 0.f, 1.f } },
-    { { -val, -val, -val }, { 0.f, 0.f, -1.f }, { 1.f, 1.f } },
-    { { -val, val, -val }, { 0.f, 0.f, -1.f }, { 1.f, 0.f } },
+    { { 1.f, 1.f, -1.f }, { 0.f, 0.f, -1.f }, { 0.f, 0.f } },
+    { { 1.f, -1.f, -1.f }, { 0.f, 0.f, -1.f }, { 0.f, 1.f } },
+    { { -1.f, -1.f, -1.f }, { 0.f, 0.f, -1.f }, { 1.f, 1.f } },
+    { { -1.f, 1.f, -1.f }, { 0.f, 0.f, -1.f }, { 1.f, 0.f } },
 };
 
 static const GLushort indices[36] =
@@ -159,7 +157,7 @@ unsigned int SkyBox::loadTexture(char* filename)
     return id;
 }
 
-void SkyBox::loadTex(char* filename, int face)
+void SkyBox::loadTex(char* filename, GLenum face)
 {
     //load SDL surface
     SDL_Surface *img;
@@ -187,7 +185,7 @@ void SkyBox::draw(mat4 view)
     glDepthMask(GL_FALSE);
 
     mat4 projection = perspective(45.0, 1.0, 0.1, 100.0);
-    mat4 model = translation(vec3(0.0, 0.0, 0.0)) * xrotation(0.0) * yrotation(0.0);
+    mat4 model = translation(vec3(0.0, 0.0, 0.0)) * xrotation(0.0) * yrotation(0.0) * scale(vec3(50, 50, 50));
     glUniformMatrix4fv(projectionLoc, 1, GL_TRUE, projection);
     glUniformMatrix4fv(modelLoc, 1, GL_TRUE, model);
     glUniformMatrix4fv(viewLoc, 1, GL_TRUE, view);

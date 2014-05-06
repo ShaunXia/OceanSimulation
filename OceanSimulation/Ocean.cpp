@@ -1,8 +1,8 @@
 #include "Ocean.h"
 #include "stdio.h"
 
-#define TILE 1
-#define TEXTURE 1
+#define TILE 0
+#define TEXTURE 0
 
 #pragma region Setup
 Ocean::Ocean(int gridX, int gridZ, int patchLength, float period, float phillipA, float suppressor, vec3 windDir) 
@@ -246,7 +246,7 @@ void Ocean::GenerateVertices()
             //Calculate final position
             vec3 original = vertices[arrIndex].originalPosition;
             vertices[arrIndex].displacedPosition[0] = original[0] + lambda * std::abs(DispX[arrIndex]);
-            vertices[arrIndex].displacedPosition[1] = std::real(Amplitudes[arrIndex]);
+            vertices[arrIndex].displacedPosition[1] = std::abs(Amplitudes[arrIndex]);
             vertices[arrIndex].displacedPosition[2] = original[2] + lambda * std::abs(DispZ[arrIndex]);
 
             //Calculate normals
@@ -265,43 +265,36 @@ void Ocean::SetupRender()
     //Create vertex buffer objects
     glGenBuffers(1, &vbo_vertices);
     glBindBuffer(GL_ARRAY_BUFFER, vbo_vertices);
-#if (TILE)
-    glBufferData(GL_ARRAY_BUFFER, (N + 1)*(M + 1)*sizeof(vertex), vertices, GL_DYNAMIC_DRAW);
-#else
-    glBufferData(GL_ARRAY_BUFFER, N*M*sizeof(vertex), vertices, GL_DYNAMIC_DRAW);
-#endif
+    glBufferData(GL_ARRAY_BUFFER, NS*MS*sizeof(vertex), vertices, GL_DYNAMIC_DRAW);
 
     glGenBuffers(1, &vbo_indices);
     glBindBuffer(GL_ELEMENT_ARRAY_BUFFER, vbo_indices);
     glBufferData(GL_ELEMENT_ARRAY_BUFFER, numIndices * sizeof(unsigned int), indices, GL_DYNAMIC_DRAW);
 
-    //Load shaders
 #if (TEXTURE)
-    program = init_program("Shaders\\water_vshader.glsl", "Shaders\\water_fshader.glsl");
     //Load texture
     glEnable(GL_TEXTURE_2D);
     tbo = loadTexture("Textures\\ocean\\Ocean_water_surface_512.jpg");
-    //tbo = loadTexture("Textures\\ocean\\tile.jpg");
+    //Load shaders
+    program = init_program("Shaders\\water_vshader.glsl", "Shaders\\water_fshader.glsl");
+    tloc = glGetUniformLocation(program, "vTexCoord");
 #else
     program = init_program("Shaders\\vshader.glsl", "Shaders\\fshader.glsl");
+    cloc = glGetUniformLocation(program, "Color");
+    nloc = glGetAttribLocation(program, "vNormal");
 #endif
-    glUseProgram(program);
 
+    glUseProgram(program);
     //Get attribute and uniform locations
     vloc = glGetAttribLocation(program, "vPosition");
     modelLoc = glGetUniformLocation(program, "Model");
     projectionLoc = glGetUniformLocation(program, "Projection");
     viewLoc = glGetUniformLocation(program, "View");
-#if (TEXTURE)
-    tloc = glGetUniformLocation(program, "vTexCoord");
-#else
-    cloc = glGetUniformLocation(program, "Color");
-    nloc = glGetAttribLocation(program, "vNormal");
-#if (TILE)
+
+#if (!TEXTURE && TILE)
     glUniform4fv(glGetUniformLocation(program, "LightPosition"), 1, vec4(3 * L / 4, 40.0, -3 * L / 4, 0.0));
-#else
+#else if(!TEXTURE && !TILE)
     glUniform4fv(glGetUniformLocation(program, "LightPosition"), 1, vec4(-L/2, 40.0, L/2, 0.0));
-#endif
 #endif
 
     glClearColor(0.53,0.81,0.98,1.0);
@@ -343,6 +336,7 @@ void Ocean::draw(mat4 viewMatrix)
 {
     glEnable(GL_DEPTH_TEST);
     glUseProgram(program);
+
 #if (TEXTURE)
     glBindTexture(GL_TEXTURE_2D, tbo);
 #else
@@ -357,11 +351,10 @@ void Ocean::draw(mat4 viewMatrix)
     glUniformMatrix4fv(projectionLoc, 1, GL_TRUE, projectionMatrix);
 
     glBindBuffer(GL_ARRAY_BUFFER, vbo_vertices);
-
-#if (TILE)
-    glBufferSubData(GL_ARRAY_BUFFER, 0, (N + 1)*(M + 1)*sizeof(vertex), vertices);
+    glBufferSubData(GL_ARRAY_BUFFER, 0, NS*MS*sizeof(vertex), vertices);
     glEnableVertexAttribArray(vloc);
     glVertexAttribPointer(vloc, 3, GL_FLOAT, GL_FALSE, sizeof(vertex), (const GLfloat*)(sizeof(GLfloat)* 3));
+
 #if (TEXTURE)
     glEnableVertexAttribArray(tloc);
     glVertexAttribPointer(tloc, 2, GL_FLOAT, GL_FALSE, sizeof(vertex), (const GLfloat*)(sizeof(GLfloat)* 9));
@@ -370,6 +363,7 @@ void Ocean::draw(mat4 viewMatrix)
     glVertexAttribPointer(nloc, 3, GL_FLOAT, GL_FALSE, sizeof(vertex), (const GLfloat *)(sizeof(GLfloat)* 6));
 #endif
 
+#if (TILE)
     glBindBuffer(GL_ELEMENT_ARRAY_BUFFER, vbo_indices);
     for (int i = 0; i < 3; ++i)
         for (int j = 0; j < 3; ++j)
@@ -379,19 +373,7 @@ void Ocean::draw(mat4 viewMatrix)
             glDrawElements(GL_TRIANGLES, numIndices, GL_UNSIGNED_INT, 0);
         }
 #else
-    glBufferSubData(GL_ARRAY_BUFFER, 0, N*M*sizeof(vertex), vertices);
-    glEnableVertexAttribArray(vloc);
-    glVertexAttribPointer(vloc, 3, GL_FLOAT, GL_FALSE, sizeof(vertex), (const void *)(sizeof(GLfloat) * 3));
-#if (TEXTURE)
-    glEnableVertexAttribArray(tloc);
-    glVertexAttribPointer(tloc, 2, GL_FLOAT, GL_FALSE, sizeof(vertex), (const void *)(sizeof(GLfloat)* 9));
-#else
-    glEnableVertexAttribArray(nloc);
-    glVertexAttribPointer(nloc, 3, GL_FLOAT, GL_FALSE, sizeof(vertex), (const GLfloat *)(sizeof(GLfloat)* 6));
-#endif
-
     glBindBuffer(GL_ELEMENT_ARRAY_BUFFER, vbo_indices);
-    //glPolygonMode(GL_FRONT_AND_BACK, GL_FILL);
     glDrawElements(GL_TRIANGLES, numIndices, GL_UNSIGNED_INT, 0);
 #endif
 

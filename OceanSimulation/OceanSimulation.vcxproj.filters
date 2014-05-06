@@ -67,5 +67,11 @@
     <ClInclude Include="Ocean.h">
       <Filter>Header Files</Filter>
     </ClInclude>
+    <ClInclude Include="ExternalReferences\include\GLFundamentals.hpp">
+      <Filter>Header Files</Filter>
+    </ClInclude>
+    <ClInclude Include="ExternalReferences\include\GLDemonstration.hpp">
+      <Filter>Header Files</Filter>
+    </ClInclude>
   </ItemGroup>
 </Project>

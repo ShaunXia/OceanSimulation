@@ -1,7 +1,7 @@
 #include "OceanScene.h"
 
-#define OCEAN 0
-#define SKY 1
+#define OCEAN 1
+#define SKY 0
 
 OceanScene::OceanScene() : demonstration("Ocean", 512, 512)
 {

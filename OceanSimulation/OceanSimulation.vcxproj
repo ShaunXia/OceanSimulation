@@ -104,6 +104,8 @@
     <None Include="Shaders\water_vshader.glsl" />
   </ItemGroup>
   <ItemGroup>
+    <ClInclude Include="ExternalReferences\include\GLDemonstration.hpp" />
+    <ClInclude Include="ExternalReferences\include\GLFundamentals.hpp" />
     <ClInclude Include="Ocean.h" />
     <ClInclude Include="OceanScene.h" />
     <ClInclude Include="SkyBox.h" />
