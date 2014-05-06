@@ -1,4 +1,7 @@
 #include "SkyBox.h"
+
+#define CUBEMAP 0
+
 struct vert
 {
     GLfloat v[3];
@@ -6,43 +9,45 @@ struct vert
     GLfloat t[2];
 };
 
+static const float val = 1.f;
+
 static const struct vert verts[24] = {
 
     /* +X */
-    { { 50.f, 50.f, 50.f }, { 1.f, 0.f, 0.f }, { 0.f, 0.f } },
-    { { 50.f, -50.f, 50.f }, { 1.f, 0.f, 0.f }, { 0.f, 1.f } },
-    { { 50.f, -50.f, -50.f }, { 1.f, 0.f, 0.f }, { 1.f, 1.f } },
-    { { 50.f, 50.f, -50.f }, { 1.f, 0.f, 0.f }, { 1.f, 0.f } },
+    { { val, val, val }, { 1.f, 0.f, 0.f }, { 0.f, 0.f } },
+    { { val, -val, val }, { 1.f, 0.f, 0.f }, { 0.f, 1.f } },
+    { { val, -val, -val }, { 1.f, 0.f, 0.f }, { 1.f, 1.f } },
+    { { val, val, -val }, { 1.f, 0.f, 0.f }, { 1.f, 0.f } },
 
     /* -X */
-    { { -50.f, 50.f, -50.f }, { -1.f, 0.f, 0.f }, { 0.f, 0.f } },
-    { { -50.f, -50.f, -50.f }, { -1.f, 0.f, 0.f }, { 0.f, 1.f } },
-    { { -50.f, -50.f, 50.f }, { -1.f, 0.f, 0.f }, { 1.f, 1.f } },
-    { { -50.f, 50.f, 50.f }, { -1.f, 0.f, 0.f }, { 1.f, 0.f } },
+    { { -val, val, -val }, { -1.f, 0.f, 0.f }, { 0.f, 0.f } },
+    { { -val, -val, -val }, { -1.f, 0.f, 0.f }, { 0.f, 1.f } },
+    { { -val, -val, val }, { -1.f, 0.f, 0.f }, { 1.f, 1.f } },
+    { { -val, val, val }, { -1.f, 0.f, 0.f }, { 1.f, 0.f } },
 
     /* +Y */
-    { { -50.f, 50.f, -50.f }, { 0.f, 1.f, 0.f }, { 0.f, 0.f } },
-    { { -50.f, 50.f, 50.f }, { 0.f, 1.f, 0.f }, { 0.f, 1.f } },
-    { { 50.f, 50.f, 50.f }, { 0.f, 1.f, 0.f }, { 1.f, 1.f } },
-    { { 50.f, 50.f, -50.f }, { 0.f, 1.f, 0.f }, { 1.f, 0.f } },
+    { { -val, val, -val }, { 0.f, 1.f, 0.f }, { 0.f, 0.f } },
+    { { -val, val, val }, { 0.f, 1.f, 0.f }, { 0.f, 1.f } },
+    { { val, val, val }, { 0.f, 1.f, 0.f }, { 1.f, 1.f } },
+    { { val, val, -val }, { 0.f, 1.f, 0.f }, { 1.f, 0.f } },
 
     /* -Y */
-    { { -50.f, -50.f, 50.f }, { 0.f, -1.f, 0.f }, { 0.f, 0.f } },
-    { { -50.f, -50.f, -50.f }, { 0.f, -1.f, 0.f }, { 0.f, 1.f } },
-    { { 50.f, -50.f, -50.f }, { 0.f, -1.f, 0.f }, { 1.f, 1.f } },
-    { { 50.f, -50.f, 50.f }, { 0.f, -1.f, 0.f }, { 1.f, 0.f } },
+    { { -val, -val, val }, { 0.f, -1.f, 0.f }, { 0.f, 0.f } },
+    { { -val, -val, -val }, { 0.f, -1.f, 0.f }, { 0.f, 1.f } },
+    { { val, -val, -val }, { 0.f, -1.f, 0.f }, { 1.f, 1.f } },
+    { { val, -val, val }, { 0.f, -1.f, 0.f }, { 1.f, 0.f } },
 
     /* +Z */
-    { { -50.f, 50.f, 50.f }, { 0.f, 0.f, 1.f }, { 0.f, 0.f } },
-    { { -50.f, -50.f, 50.f }, { 0.f, 0.f, 1.f }, { 0.f, 1.f } },
-    { { 50.f, -50.f, 50.f }, { 0.f, 0.f, 1.f }, { 1.f, 1.f } },
-    { { 50.f, 50.f, 50.f }, { 0.f, 0.f, 1.f }, { 1.f, 0.f } },
+    { { -val, val, val }, { 0.f, 0.f, 1.f }, { 0.f, 0.f } },
+    { { -val, -val, val }, { 0.f, 0.f, 1.f }, { 0.f, 1.f } },
+    { { val, -val, val }, { 0.f, 0.f, 1.f }, { 1.f, 1.f } },
+    { { val, val, val }, { 0.f, 0.f, 1.f }, { 1.f, 0.f } },
 
     /* -Z */
-    { { 50.f, 50.f, -50.f }, { 0.f, 0.f, -1.f }, { 0.f, 0.f } },
-    { { 50.f, -50.f, -50.f }, { 0.f, 0.f, -1.f }, { 0.f, 1.f } },
-    { { -50.f, -50.f, -50.f }, { 0.f, 0.f, -1.f }, { 1.f, 1.f } },
-    { { -50.f, 50.f, -50.f }, { 0.f, 0.f, -1.f }, { 1.f, 0.f } },
+    { { val, val, -val }, { 0.f, 0.f, -1.f }, { 0.f, 0.f } },
+    { { val, -val, -val }, { 0.f, 0.f, -1.f }, { 0.f, 1.f } },
+    { { -val, -val, -val }, { 0.f, 0.f, -1.f }, { 1.f, 1.f } },
+    { { -val, val, -val }, { 0.f, 0.f, -1.f }, { 1.f, 0.f } },
 };
 
 static const GLushort indices[36] =
@@ -59,16 +64,6 @@ SkyBox::SkyBox(char* left, char* back, char* right, char* front, char* top, char
 {
     const size_t sz = sizeof (GLfloat);
 
-    glEnable(GL_TEXTURE_2D);
-
-    //Load textures
-    skybox[0] = loadJPG_Texture(right);
-    skybox[1] = loadJPG_Texture(left);
-    skybox[2] = loadJPG_Texture(top);
-    skybox[3] = loadJPG_Texture(bottom);
-    skybox[4] = loadJPG_Texture(back);
-    skybox[5] = loadJPG_Texture(front);
-
     //Set up buffer objects
     glGenBuffers(1, &vbo_verts);
     glBindBuffer(GL_ARRAY_BUFFER, vbo_verts);
@@ -78,13 +73,47 @@ SkyBox::SkyBox(char* left, char* back, char* right, char* front, char* top, char
     glBindBuffer(GL_ELEMENT_ARRAY_BUFFER, vbo_inds);
     glBufferData(GL_ELEMENT_ARRAY_BUFFER, 36 * sizeof(GLushort), indices, GL_STATIC_DRAW);
 
+#if (CUBEMAP)
+    //Load Textures
+    glEnable(GL_TEXTURE_CUBE_MAP);
+    glGenTextures(1, &texMap);
+    glBindTexture(GL_TEXTURE_CUBE_MAP, texMap);
+
+    loadTex(right,  GL_TEXTURE_CUBE_MAP_POSITIVE_X);
+    loadTex(left,   GL_TEXTURE_CUBE_MAP_NEGATIVE_X);
+    loadTex(top,    GL_TEXTURE_CUBE_MAP_POSITIVE_Y);
+    loadTex(bottom, GL_TEXTURE_CUBE_MAP_NEGATIVE_Y);
+    loadTex(back,   GL_TEXTURE_CUBE_MAP_POSITIVE_Z);
+    loadTex(front,  GL_TEXTURE_CUBE_MAP_NEGATIVE_Z);
+
+    glTexParameteri(GL_TEXTURE_CUBE_MAP, GL_TEXTURE_MIN_FILTER, GL_LINEAR);
+    glTexParameteri(GL_TEXTURE_CUBE_MAP, GL_TEXTURE_MAG_FILTER, GL_LINEAR);
+    glTexParameteri(GL_TEXTURE_CUBE_MAP, GL_TEXTURE_WRAP_R, GL_CLAMP_TO_EDGE);
+    glTexParameteri(GL_TEXTURE_CUBE_MAP, GL_TEXTURE_WRAP_S, GL_CLAMP_TO_EDGE);
+    glTexParameteri(GL_TEXTURE_CUBE_MAP, GL_TEXTURE_WRAP_T, GL_CLAMP_TO_EDGE);
+
+    //Load shaders
+    skyShaders = init_program("Shaders\\skymap_vshader.glsl", "Shaders\\skymap_fshader.glsl");
+    glUseProgram(skyShaders);
+#else
+    //Load Textures
+    glEnable(GL_TEXTURE_2D);
+    skybox[0] = loadTexture(right);
+    skybox[1] = loadTexture(left);
+    skybox[2] = loadTexture(top);
+    skybox[3] = loadTexture(bottom);
+    skybox[4] = loadTexture(back);
+    skybox[5] = loadTexture(front);
+
     //Load shaders
     skyShaders = init_program("Shaders\\sky_vshader.glsl", "Shaders\\sky_fshader.glsl");
     glUseProgram(skyShaders);
 
     //Get attribute and uniform locations
-    vloc = glGetAttribLocation(skyShaders, "vPosition");
     tloc = glGetAttribLocation(skyShaders, "vTexCoord");
+#endif
+
+    vloc = glGetAttribLocation(skyShaders, "vPosition");
     modelLoc = glGetUniformLocation(skyShaders, "Model");
     projectionLoc = glGetUniformLocation(skyShaders, "Projection");
     viewLoc = glGetUniformLocation(skyShaders, "View");
@@ -98,7 +127,7 @@ SkyBox::~SkyBox()
     glDeleteTextures(6, &skybox[0]);
 }
 
-unsigned int SkyBox::loadJPG_Texture(char* filename)
+unsigned int SkyBox::loadTexture(char* filename)
 {
     //Generate texture id
     unsigned int id;
@@ -114,9 +143,7 @@ unsigned int SkyBox::loadJPG_Texture(char* filename)
     }
     //Get properties
     GLint f = img->format->BytesPerPixel;
-    GLenum texFormat;
-    if (f == 4) texFormat = GL_RGBA;
-    else if (f == 3) texFormat = GL_RGB;
+    GLenum texFormat = f == 4 ? GL_RGBA : GL_RGB;
 
     //Bind the texture
     glBindTexture(GL_TEXTURE_2D, id);
@@ -126,11 +153,27 @@ unsigned int SkyBox::loadJPG_Texture(char* filename)
     glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_WRAP_S, GL_CLAMP_TO_EDGE);
     glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_WRAP_T, GL_CLAMP_TO_EDGE);
 
-    //glTexImage2D(GL_TEXTURE_2D, 0, GL_RGB, img->w, img->h, 0, GL_RGB, GL_UNSIGNED_SHORT_5_6_5, img->pixels);
     glTexImage2D(GL_TEXTURE_2D, 0, f, img->w, img->h, 0, texFormat, GL_UNSIGNED_BYTE, img->pixels);
     SDL_FreeSurface(img);
 
     return id;
+}
+
+void SkyBox::loadTex(char* filename, int face)
+{
+    //load SDL surface
+    SDL_Surface *img;
+    img = IMG_Load(filename);
+
+    if (!img)
+    {
+        printf("IMG_Load: %s\n", IMG_GetError());
+    }
+    //Get properties
+    GLint f = img->format->BytesPerPixel;
+    GLenum texFormat = f == 4 ? GL_RGBA : GL_RGB;
+
+    glTexImage2D(face, 0, f, img->w, img->h, 0, texFormat, GL_UNSIGNED_BYTE, img->pixels);
 }
 
 void SkyBox::draw(mat4 view)
@@ -139,7 +182,7 @@ void SkyBox::draw(mat4 view)
     glBindBuffer(GL_ARRAY_BUFFER, vbo_verts);
     glBindBuffer(GL_ELEMENT_ARRAY_BUFFER, vbo_inds);
 
-    //Disable writes to depth buffer so the skybox will always appear "behind" everything else
+    //Disable writes to depth buffer
     glDisable(GL_DEPTH_TEST);
     glDepthMask(GL_FALSE);
 
@@ -151,9 +194,13 @@ void SkyBox::draw(mat4 view)
 
     const size_t sz = sizeof (GLfloat);
     glEnableVertexAttribArray(vloc);
-    glEnableVertexAttribArray(tloc);
-
     glVertexAttribPointer(vloc, 3, GL_FLOAT, GL_FALSE, sz * 8, 0);
+
+#if (CUBEMAP)
+    glBindTexture(GL_TEXTURE_CUBE_MAP, texMap);
+    glDrawElements(GL_TRIANGLES, 36, GL_UNSIGNED_SHORT, 0);
+#else
+    glEnableVertexAttribArray(tloc);
     glVertexAttribPointer(tloc, 2, GL_FLOAT, GL_FALSE, sz * 8, (void*)(sz * 6));
 
     for (int i = 0; i < 6; ++i)
@@ -161,6 +208,10 @@ void SkyBox::draw(mat4 view)
         glBindTexture(GL_TEXTURE_2D, skybox[i]);
         glDrawElements(GL_TRIANGLES, 6, GL_UNSIGNED_SHORT, (void*)(i*sizeof(GLushort)* 6));
     }
+
+    //Clear texture binding
+    glBindTexture(GL_TEXTURE_2D, 0);
+#endif
 
     //Re-enable depth buffer
     glEnable(GL_DEPTH_TEST);

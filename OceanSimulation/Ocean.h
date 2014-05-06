@@ -42,13 +42,16 @@ protected:
     float lambda;
     int N, M;                 //grid dimensions
     int NS, MS;
+    int nAdjust, mAdjust;     //Tessendorf model bounds: -N/2 <= n < N/2
+                              //                         -M/2 <= m < M/2
+    float waveVecAdjust; 
     int L;                    //patch dimensions L = Lx = Lz
     float Time;
     float T;                  //period
     float PhA;                //numeric constant, affects wave height
     float Suppressor;         //Suppression factor for Phillip Spectrum
     vec3 WindDir;             //wind direction
-    float WindSpeed = 32;
+    float WindSpeed;
 #pragma endregion
 
 #pragma region Render Variables

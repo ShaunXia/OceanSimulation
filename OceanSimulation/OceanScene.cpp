@@ -1,14 +1,14 @@
 #include "OceanScene.h"
 
-#define OCEAN 1
-#define SKY 0
+#define OCEAN 0
+#define SKY 1
 
 OceanScene::OceanScene() : demonstration("Ocean", 512, 512)
 {
 #if(OCEAN)
     //ocean = new Ocean(64, 64, 64, 80, 0.00035, 0.000001, vec3(32.0, 32.0, 0.0));
-    ocean = new Ocean(64, 64, 100, 90, 0.000085, 0.000001, vec3(32.0, 32.0, 0.0));
-    cam_position = vec3(3 * 64 / 4, 2.0, -3 * 10);
+    ocean = new Ocean(64, 64, 80, 90, 0.000085, 0.000001, vec3(10.0, 0.0, 0.0));
+    //cam_position = vec3(3 * 64 / 4, 2.0, -3 * 10);
 #endif
 #if(SKY)
     char* left = "Textures\\skymap\\xneg.png";

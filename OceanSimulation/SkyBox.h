@@ -21,7 +21,10 @@ private:
     GLuint vloc, nloc, tloc;
     GLuint modelLoc, projectionLoc, viewLoc, texMap;
 
-    unsigned int loadJPG_Texture(char* filename);
-    void loadTexture(char* filename);
+    void initBasic();
+    void initSkyMap();
+    unsigned int loadTexture(char* filename);
+    void loadTex(char* filename, int face);
+    void setupCubeMap();
 };
 

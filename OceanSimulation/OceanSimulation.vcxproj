@@ -95,6 +95,8 @@
   </ItemGroup>
   <ItemGroup>
     <None Include="Shaders\fshader.glsl" />
+    <None Include="Shaders\skymap_fshader.glsl" />
+    <None Include="Shaders\skymap_vshader.glsl" />
     <None Include="Shaders\sky_fshader.glsl" />
     <None Include="Shaders\sky_vshader.glsl" />
     <None Include="Shaders\vshader.glsl" />
