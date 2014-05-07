@@ -12,7 +12,7 @@ void main()
 {
     vec4 pos = (View * Model * vec4(vPosition, 1.0));
 
-    R = pos.xyz;
+    R = vPosition;
 
     gl_Position = Projection * pos;
 }

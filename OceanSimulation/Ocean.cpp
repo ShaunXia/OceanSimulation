@@ -1,7 +1,7 @@
 #include "Ocean.h"
 #include "stdio.h"
 
-#define TILE 0
+#define TILE 1
 #define TEXTURE 0
 
 #pragma region Setup
@@ -56,8 +56,6 @@ void Ocean::InitVertices()
             vertices[arrIndex].originalPosition[0] = vertices[arrIndex].displacedPosition[0] = (i - nAdjust) * xAdjust;
             vertices[arrIndex].originalPosition[1] = vertices[arrIndex].displacedPosition[1] = 0;
             vertices[arrIndex].originalPosition[2] = vertices[arrIndex].displacedPosition[2] = (j - mAdjust) * zAdjust;
-            vertices[arrIndex].texCoord[0] = (float) i / NS;
-            vertices[arrIndex].texCoord[1] = (float) j / MS;
         }
     }
 
@@ -271,77 +269,34 @@ void Ocean::SetupRender()
     glBindBuffer(GL_ELEMENT_ARRAY_BUFFER, vbo_indices);
     glBufferData(GL_ELEMENT_ARRAY_BUFFER, numIndices * sizeof(unsigned int), indices, GL_DYNAMIC_DRAW);
 
-#if (TEXTURE)
-    //Load texture
-    glEnable(GL_TEXTURE_2D);
-    tbo = loadTexture("Textures\\ocean\\Ocean_water_surface_512.jpg");
-    //Load shaders
-    program = init_program("Shaders\\water_vshader.glsl", "Shaders\\water_fshader.glsl");
-    tloc = glGetUniformLocation(program, "vTexCoord");
-#else
     program = init_program("Shaders\\vshader.glsl", "Shaders\\fshader.glsl");
-    cloc = glGetUniformLocation(program, "Color");
-    nloc = glGetAttribLocation(program, "vNormal");
-#endif
-
     glUseProgram(program);
+
     //Get attribute and uniform locations
+    nloc = glGetAttribLocation(program, "vNormal");
     vloc = glGetAttribLocation(program, "vPosition");
     modelLoc = glGetUniformLocation(program, "Model");
     projectionLoc = glGetUniformLocation(program, "Projection");
     viewLoc = glGetUniformLocation(program, "View");
-
-#if (!TEXTURE && TILE)
+    camLoc = glGetUniformLocation(program, "cameraPosition");
+#if (TILE)
     glUniform4fv(glGetUniformLocation(program, "LightPosition"), 1, vec4(3 * L / 4, 40.0, -3 * L / 4, 0.0));
-#else if(!TEXTURE && !TILE)
+#else
     glUniform4fv(glGetUniformLocation(program, "LightPosition"), 1, vec4(-L/2, 40.0, L/2, 0.0));
 #endif
 
     glClearColor(0.53,0.81,0.98,1.0);
 }
-unsigned int Ocean::loadTexture(char* filename)
+void Ocean::setSkyMap(GLuint texMap)
 {
-    //Generate texture id
-    unsigned int id;
-    glGenTextures(1, &id);
-
-    //load SDL surface
-    SDL_Surface *img;
-    img = IMG_Load(filename);
-
-    if (!img)
-    {
-        printf("IMG_Load: %s\n", IMG_GetError());
-    }
-    //Get properties
-    GLint f = img->format->BytesPerPixel;
-    GLenum texFormat;
-    if (f == 4) texFormat = GL_RGBA;
-    else if (f == 3) texFormat = GL_RGB;
-
-    //Bind the texture
-    glBindTexture(GL_TEXTURE_2D, id);
-
-    glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MIN_FILTER, GL_LINEAR);
-    glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MAG_FILTER, GL_LINEAR);
-    glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_WRAP_S, GL_CLAMP_TO_EDGE);
-    glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_WRAP_T, GL_CLAMP_TO_EDGE);
-
-    glTexImage2D(GL_TEXTURE_2D, 0, f, img->w, img->h, 0, texFormat, GL_UNSIGNED_BYTE, img->pixels);
-    SDL_FreeSurface(img);
-
-    return id;
+    skyMap = texMap;
 }
-void Ocean::draw(mat4 viewMatrix)
+void Ocean::draw(mat4 viewMatrix, vec3 camPosition)
 {
-    glEnable(GL_DEPTH_TEST);
     glUseProgram(program);
-
-#if (TEXTURE)
-    glBindTexture(GL_TEXTURE_2D, tbo);
-#else
-    glUniform4fv(cloc, 1, vec4(0.18, 0.55, 0.34, 0.0));
-#endif
+    glEnable(GL_DEPTH_TEST);
+    glEnable(GL_TEXTURE_CUBE_MAP);
+    glBindTexture(GL_TEXTURE_CUBE_MAP, skyMap);
 
     mat4 modelMatrix = translation(vec3(0.0, -15.0, -60.0)) * xrotation(0.0) * yrotation(0.0);
     mat4 projectionMatrix = perspective(45.0, 1.0, 0.1, 100.0);
@@ -349,19 +304,14 @@ void Ocean::draw(mat4 viewMatrix)
     glUniformMatrix4fv(modelLoc, 1, GL_TRUE, modelMatrix);
     glUniformMatrix4fv(viewLoc, 1, GL_TRUE, viewMatrix);
     glUniformMatrix4fv(projectionLoc, 1, GL_TRUE, projectionMatrix);
+    glUniform3fv(camLoc, 1, camPosition);
 
     glBindBuffer(GL_ARRAY_BUFFER, vbo_vertices);
     glBufferSubData(GL_ARRAY_BUFFER, 0, NS*MS*sizeof(vertex), vertices);
     glEnableVertexAttribArray(vloc);
     glVertexAttribPointer(vloc, 3, GL_FLOAT, GL_FALSE, sizeof(vertex), (const GLfloat*)(sizeof(GLfloat)* 3));
-
-#if (TEXTURE)
-    glEnableVertexAttribArray(tloc);
-    glVertexAttribPointer(tloc, 2, GL_FLOAT, GL_FALSE, sizeof(vertex), (const GLfloat*)(sizeof(GLfloat)* 9));
-#else
     glEnableVertexAttribArray(nloc);
     glVertexAttribPointer(nloc, 3, GL_FLOAT, GL_FALSE, sizeof(vertex), (const GLfloat *)(sizeof(GLfloat)* 6));
-#endif
 
 #if (TILE)
     glBindBuffer(GL_ELEMENT_ARRAY_BUFFER, vbo_indices);
@@ -376,9 +326,6 @@ void Ocean::draw(mat4 viewMatrix)
     glBindBuffer(GL_ELEMENT_ARRAY_BUFFER, vbo_indices);
     glDrawElements(GL_TRIANGLES, numIndices, GL_UNSIGNED_INT, 0);
 #endif
-
-    //Clear texture binding
-    //glBindTexture(GL_TEXTURE_2D, 0);
 }
 void Ocean::step()
 {
@@ -390,7 +337,6 @@ void Ocean::step()
 #pragma region Testing
 void Ocean::CheckVerts()
 {
-    FILE *uv = fopen("uv.txt", "w");
     FILE *verts = fopen("vertices.txt", "w");
     FILE *ind = fopen("indices.txt", "w");
     fprintf(verts, "%d\n", numIndices);
@@ -402,11 +348,6 @@ void Ocean::CheckVerts()
         fprintf(verts, "%d: %f %f %f\n", j, vertices[j].displacedPosition[0],
             vertices[j].displacedPosition[1], vertices[j].displacedPosition[2]);
         if ((i + 1) % 3 == 0) fprintf(verts, "\n");
-    }
-
-    for (int i = 0; i < NS * MS; ++i)
-    {
-        fprintf(uv, "%d: %f %f\n", i, vertices[i].texCoord[0], vertices[i].texCoord[1]);
     }
 }
 #pragma endregion

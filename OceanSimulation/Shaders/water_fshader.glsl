@@ -1,5 +1,6 @@
 #version 150 
 
+uniform samplerCube skymap;
 uniform sampler2D diffuse;
 //uniform vec4 AmbientProduct;
 

@@ -1,6 +1,6 @@
 #include "SkyBox.h"
 
-#define CUBEMAP 0
+#define CUBEMAP 1
 
 struct vert
 {
@@ -9,8 +9,8 @@ struct vert
     GLfloat t[2];
 };
 
-static const struct vert verts[24] = {
-
+static const struct vert verts[24] = 
+{
     /* +X */
     { { 1.f, 1.f, 1.f }, { 1.f, 0.f, 0.f }, { 0.f, 0.f } },
     { { 1.f, -1.f, 1.f }, { 1.f, 0.f, 0.f }, { 0.f, 1.f } },
@@ -119,7 +119,6 @@ SkyBox::SkyBox(char* left, char* back, char* right, char* front, char* top, char
     glClearColor(0.53, 0.81, 0.98, 1.0);
 }
 
-
 SkyBox::~SkyBox()
 {
     glDeleteTextures(6, &skybox[0]);
@@ -214,4 +213,9 @@ void SkyBox::draw(mat4 view)
     //Re-enable depth buffer
     glEnable(GL_DEPTH_TEST);
     glDepthMask(GL_TRUE);
+}
+
+GLuint SkyBox::getTexMap()
+{
+    return texMap;
 }

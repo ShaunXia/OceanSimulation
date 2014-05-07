@@ -22,7 +22,6 @@ protected:
         vec3 originalPosition;
         vec3 displacedPosition;
         vec3 normal;
-        vec2 texCoord;
     };
     vertex* vertices;
     unsigned int* indices;
@@ -56,9 +55,10 @@ protected:
 
 #pragma region Render Variables
     GLuint program;
-    GLuint vbo, vbo_vertices, vbo_indices, tbo, texCoords;
-    GLuint vloc, cloc, tloc, nloc;
-    GLuint modelLoc, projectionLoc, viewLoc, modelViewInverseTranspose;
+    GLuint skyMap;
+    GLuint vbo_vertices, vbo_indices;
+    GLuint vloc, nloc, camLoc;
+    GLuint modelLoc, projectionLoc, viewLoc;
 #pragma endregion
 
 #pragma region Helper Methods
@@ -81,7 +81,6 @@ protected:
 
 #pragma region Render Setup
     void SetupRender();
-    unsigned int loadTexture(char* filename);
 #pragma endregion
 
 #pragma region Testing Variables and Methods
@@ -92,7 +91,8 @@ public:
     Ocean(int gridX, int gridZ, int patchLength, float period, float phillipA, float suppressor, vec3 windDir);
     ~Ocean();
 
-    void draw(mat4 viewMatrix);
+    void draw(mat4 viewMatrix, vec3 cam_position);
+    void setSkyMap(GLuint texMap);
     void step();
 };
 
