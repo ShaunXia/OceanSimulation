@@ -121,7 +121,6 @@ SkyBox::SkyBox(char* left, char* back, char* right, char* front, char* top, char
 
 SkyBox::~SkyBox()
 {
-    glDeleteTextures(6, &skybox[0]);
 }
 
 unsigned int SkyBox::loadTexture(char* filename)

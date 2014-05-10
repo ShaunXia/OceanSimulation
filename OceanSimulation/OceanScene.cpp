@@ -2,7 +2,7 @@
 
 OceanScene::OceanScene() : demonstration("Ocean", 512, 512)
 {
-    //ocean = new Ocean(64, 64, 64, 80, 0.00035, 0.000001, vec3(32.0, 32.0, 0.0));
+    //Ocean parameters: (gridX, gridZ, patchLength, period, PhillipsConstant, Suppressor, windDirection)
     ocean = new Ocean(64, 64, 80, 90, 0.000085, 0.000001, vec3(10.0, 0.0, 0.0));
 
     char* left = "Textures\\skymap\\xneg.png";

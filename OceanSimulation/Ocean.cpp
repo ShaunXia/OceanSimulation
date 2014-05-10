@@ -5,9 +5,24 @@
 #define TEXTURE 1
 
 #pragma region Setup
+/* Ocean Setup Notes:
+ * gridX, gridZ -> N, M
+ * patchLength -> L
+ * N, M must both be a power of 2 (usually values in the range 128 to 512 are sufficient)
+ *      The grid facet sizes dx and dz are determined by L/N and L/M
+ *      dx and dz should never go below 2 cm
+ *      For more interesting waves, dx and dz should be smaller than (WindSpeed^2 / g) by a substantial amount (10 - 1000)
+ * lambda - A value that scales the importance of the displacement vector when computing horizontal displacements
+ * Under the Tessendorf model, the ocean grid coordinates are at points (n * L / N) and (m * L / M)
+ *      where the bounds on n and m are: (-N/2) <= n < N
+ *                                       (-M/2) <= m < M
+ *      For convenience when iterating through grid, nAdjust and mAdjust are calculated as N/2 and M/2
+ *      With this, can iterate from 0 <= i < N and 0 <= j < M, where grid coordinates are now (i - nAdjust) * (L / N) and
+ *          (j - mAdjust) * (L / N)
+ */
 Ocean::Ocean(int gridX, int gridZ, int patchLength, float period, float phillipA, float suppressor, vec3 windDir) 
 : N(gridX), M(gridZ), L(patchLength), T(period), PhA(phillipA), Suppressor(suppressor), 
-WindDir(windDir), Time(10), numIndices(0), g(9.81), lambda(1.5), WindSpeed(32), nAdjust(N/2), mAdjust(M/2)
+WindDir(windDir), Time(11), numIndices(0), g(9.81), lambda(1.5), WindSpeed(32), nAdjust(N/2), mAdjust(M/2)
 {
     printf("GL %s, GLSL %s\n", glGetString(GL_VERSION), glGetString(GL_SHADING_LANGUAGE_VERSION));
 
@@ -36,7 +51,6 @@ WindDir(windDir), Time(10), numIndices(0), g(9.81), lambda(1.5), WindSpeed(32), 
     InitAmplitudeNought();
     GenerateCoefficients();
     GenerateVertices();
-    CheckVerts();
     SetupRender();
 }
 Ocean::~Ocean()
