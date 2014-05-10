@@ -8,5 +8,5 @@ out vec4 fragment;
 
 void main()
 {
-    fragment = textureCube(skymap, R);
+    fragment = texture(skymap, R);
 }

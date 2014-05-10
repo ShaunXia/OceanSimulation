@@ -17,7 +17,7 @@ void main()
 
     vec3 reflection = reflect(I, N);
 
-    vec4 reflectionColor = textureCube(texMap, reflection);
+    vec4 reflectionColor = texture(texMap, reflection);
 
     float f = clamp(pow(1.0 - dot(I, N), 3.0), 0.0, 1.0);
 
