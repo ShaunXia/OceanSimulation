@@ -173,7 +173,7 @@ void SkyBox::loadTex(char* filename, GLenum face)
     glTexImage2D(face, 0, f, img->w, img->h, 0, texFormat, GL_UNSIGNED_BYTE, img->pixels);
 }
 
-void SkyBox::draw(mat4 view)
+void SkyBox::draw(mat4 view, vec3 cam_position)
 {
     glUseProgram(skyShaders);
     glBindBuffer(GL_ARRAY_BUFFER, vbo_verts);
@@ -184,7 +184,7 @@ void SkyBox::draw(mat4 view)
     glDepthMask(GL_FALSE);
 
     mat4 projection = perspective(45.0, 1.0, 0.1, 100.0);
-    mat4 model = translation(vec3(0.0, 0.0, 0.0)) * xrotation(0.0) * yrotation(0.0) * scale(vec3(50, 50, 50));
+    mat4 model = translation(cam_position) * xrotation(0.0) * yrotation(0.0) * scale(vec3(50, 50, 50));
     glUniformMatrix4fv(projectionLoc, 1, GL_TRUE, projection);
     glUniformMatrix4fv(modelLoc, 1, GL_TRUE, model);
     glUniformMatrix4fv(viewLoc, 1, GL_TRUE, view);

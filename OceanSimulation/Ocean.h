@@ -31,6 +31,7 @@ protected:
     complex<float>* AmplitudeNought;
     complex<float>* AmplitudeNoughtConjugate;
     complex<float>* SlopeX;
+    complex<float>* SlopeY;
     complex<float>* SlopeZ;
     complex<float>* DispX;
     complex<float>* DispZ;
@@ -57,7 +58,7 @@ protected:
     GLuint program;
     GLuint skyMap;
     GLuint vbo_vertices, vbo_indices;
-    GLuint vloc, nloc, camLoc;
+    GLuint vloc, nloc, cloc, camLoc;
     GLuint modelLoc, projectionLoc, viewLoc;
 #pragma endregion
 

@@ -10,7 +10,7 @@ class SkyBox
 public:
     SkyBox(char* left, char* back, char* right, char* front, char* top, char* bottom);
     ~SkyBox();
-    void draw(mat4 view);
+    void draw(mat4 view, vec3 cam_position);
     GLuint getTexMap();
 
 private:

@@ -1,8 +1,5 @@
 #include "OceanScene.h"
 
-#define OCEAN 1
-#define SKY 1
-
 OceanScene::OceanScene() : demonstration("Ocean", 512, 512)
 {
     //ocean = new Ocean(64, 64, 64, 80, 0.00035, 0.000001, vec3(32.0, 32.0, 0.0));
@@ -17,7 +14,7 @@ OceanScene::OceanScene() : demonstration("Ocean", 512, 512)
     skybox = new SkyBox(left, back, right, front, top, bottom);
 
     ocean->setSkyMap(skybox->getTexMap());
-    cam_position = vec3(0.0, 0.0, 0.0);
+    cam_position = vec3(3*22.5, 10.0, -3*22.5);
 }
 
 
@@ -29,7 +26,7 @@ void OceanScene::draw()
 {
     glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
 
-    skybox->draw(view());
+    skybox->draw(view(), cam_position);
     ocean->draw(view(), cam_position);
 }
 

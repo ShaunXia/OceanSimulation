@@ -2,7 +2,7 @@
 #include "stdio.h"
 
 #define TILE 1
-#define TEXTURE 0
+#define TEXTURE 1
 
 #pragma region Setup
 Ocean::Ocean(int gridX, int gridZ, int patchLength, float period, float phillipA, float suppressor, vec3 windDir) 
@@ -27,6 +27,7 @@ WindDir(windDir), Time(10), numIndices(0), g(9.81), lambda(1.5), WindSpeed(32), 
     AmplitudeNought = new complex<float>[(N + 1) * (M + 1)];
     Amplitudes = new complex<float>[N*M];
     SlopeX = new complex<float>[N*M];
+    SlopeY = new complex<float>[N*M];
     SlopeZ = new complex<float>[N*M];
     DispX = new complex<float>[N*M];
     DispZ = new complex<float>[N*M];
@@ -34,9 +35,9 @@ WindDir(windDir), Time(10), numIndices(0), g(9.81), lambda(1.5), WindSpeed(32), 
     InitVertices();
     InitIndices();
     InitAmplitudeNought();
-    CheckVerts();
     GenerateCoefficients();
     GenerateVertices();
+    CheckVerts();
     SetupRender();
 }
 Ocean::~Ocean()
@@ -154,6 +155,7 @@ void Ocean::GenerateCoefficients()
 
             Amplitudes[arrIndex] = FourierAmplitude(i, j, waveVec);
             SlopeX[arrIndex] = Amplitudes[arrIndex] * complex<float>(0, waveVec[0]);
+            SlopeY[arrIndex] = Amplitudes[arrIndex] * complex<float>(0, waveVec[1]);
             SlopeZ[arrIndex] = Amplitudes[arrIndex] * complex<float>(0, waveVec[2]);
             if (waveNumber < Suppressor)
             {
@@ -190,6 +192,7 @@ void Ocean::GenerateVertices()
 
     ComputeIFFT(Amplitudes, N, M);
     ComputeIFFT(SlopeX, N, M);
+    ComputeIFFT(SlopeY, N, M);
     ComputeIFFT(SlopeZ, N, M);
     ComputeIFFT(DispX, N, M);
     ComputeIFFT(DispZ, N, M);
@@ -218,7 +221,7 @@ void Ocean::GenerateVertices()
             vertices[vertIndex].displacedPosition[2] = original[2] + lambda * std::abs(DispZ[arrIndex]);
 
             //Calculate normals
-            vec3 slopeVec = vec3(std::abs(SlopeX[arrIndex]), 1.0, std::abs(SlopeZ[arrIndex]));
+            vec3 slopeVec = vec3(std::abs(SlopeX[arrIndex]), std::abs(SlopeY[arrIndex]), std::abs(SlopeZ[arrIndex]));
             //vertices[vertIndex].normal = (vec3(0.0, 1.0, 0.0) - slopeVec);
             vertices[vertIndex].normal = (vec3(0.0, 1.0, 0.0) - slopeVec) / sqrt(1 + slopeVec*slopeVec);
 
@@ -248,7 +251,7 @@ void Ocean::GenerateVertices()
             vertices[arrIndex].displacedPosition[2] = original[2] + lambda * std::abs(DispZ[arrIndex]);
 
             //Calculate normals
-            vec3 slopeVec = vec3(std::abs(SlopeX[arrIndex]), 1.0, std::abs(SlopeZ[arrIndex]));
+            vec3 slopeVec = vec3(std::abs(SlopeX[arrIndex]), std::abs(SlopeY[arrIndex]), std::abs(SlopeZ[arrIndex]));
             //vertices[arrIndex].normal = (vec3(0.0, 1.0, 0.0) - slopeVec);
             vertices[arrIndex].normal = (vec3(0.0, 1.0, 0.0) - slopeVec) / sqrt(1 + slopeVec*slopeVec);
 #endif
@@ -269,8 +272,12 @@ void Ocean::SetupRender()
     glBindBuffer(GL_ELEMENT_ARRAY_BUFFER, vbo_indices);
     glBufferData(GL_ELEMENT_ARRAY_BUFFER, numIndices * sizeof(unsigned int), indices, GL_DYNAMIC_DRAW);
 
+#if (TEXTURE)
     program = init_program("Shaders\\vshader.glsl", "Shaders\\fshader.glsl");
-    glUseProgram(program);
+    camLoc = glGetUniformLocation(program, "cameraPosition");
+#else
+    program = init_program("Shaders\\water_vshader.glsl", "Shaders\\water_fshader.glsl");
+#endif
 
     //Get attribute and uniform locations
     nloc = glGetAttribLocation(program, "vNormal");
@@ -278,7 +285,6 @@ void Ocean::SetupRender()
     modelLoc = glGetUniformLocation(program, "Model");
     projectionLoc = glGetUniformLocation(program, "Projection");
     viewLoc = glGetUniformLocation(program, "View");
-    camLoc = glGetUniformLocation(program, "cameraPosition");
 #if (TILE)
     glUniform4fv(glGetUniformLocation(program, "LightPosition"), 1, vec4(3 * L / 4, 40.0, -3 * L / 4, 0.0));
 #else
@@ -295,8 +301,12 @@ void Ocean::draw(mat4 viewMatrix, vec3 camPosition)
 {
     glUseProgram(program);
     glEnable(GL_DEPTH_TEST);
+
+#if (TEXTURE)
     glEnable(GL_TEXTURE_CUBE_MAP);
     glBindTexture(GL_TEXTURE_CUBE_MAP, skyMap);
+    glUniform3fv(camLoc, 1, camPosition);
+#endif
 
     mat4 modelMatrix = translation(vec3(0.0, -15.0, -60.0)) * xrotation(0.0) * yrotation(0.0);
     mat4 projectionMatrix = perspective(45.0, 1.0, 0.1, 100.0);
@@ -304,7 +314,6 @@ void Ocean::draw(mat4 viewMatrix, vec3 camPosition)
     glUniformMatrix4fv(modelLoc, 1, GL_TRUE, modelMatrix);
     glUniformMatrix4fv(viewLoc, 1, GL_TRUE, viewMatrix);
     glUniformMatrix4fv(projectionLoc, 1, GL_TRUE, projectionMatrix);
-    glUniform3fv(camLoc, 1, camPosition);
 
     glBindBuffer(GL_ARRAY_BUFFER, vbo_vertices);
     glBufferSubData(GL_ARRAY_BUFFER, 0, NS*MS*sizeof(vertex), vertices);
@@ -337,7 +346,7 @@ void Ocean::step()
 #pragma region Testing
 void Ocean::CheckVerts()
 {
-    FILE *verts = fopen("vertices.txt", "w");
+    FILE *verts = fopen("normals.txt", "w");
     FILE *ind = fopen("indices.txt", "w");
     fprintf(verts, "%d\n", numIndices);
 
@@ -345,8 +354,8 @@ void Ocean::CheckVerts()
     {
         int j = indices[i];
         fprintf(ind, "%d: %d\n", i, j);
-        fprintf(verts, "%d: %f %f %f\n", j, vertices[j].displacedPosition[0],
-            vertices[j].displacedPosition[1], vertices[j].displacedPosition[2]);
+        fprintf(verts, "%d: %f %f %f\n", j, vertices[j].normal[0],
+            vertices[j].normal[1], vertices[j].normal[2]);
         if ((i + 1) % 3 == 0) fprintf(verts, "\n");
     }
 }
