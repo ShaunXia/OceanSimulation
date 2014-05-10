@@ -15,7 +15,7 @@ using namespace gl;
 
 class Ocean
 {
-protected:
+private:
 
 #pragma region Vertex Data
     struct vertex {
@@ -62,7 +62,6 @@ protected:
 #pragma endregion
 
 #pragma region Helper Methods
-    vec3 WaveVector(int n, int m);
     float Dispersion(vec3 waveVec);
     float PhillipSpectrum(vec3 waveVec);
     complex<float> FourierAmplitudeNought(vec3 waveVec);
