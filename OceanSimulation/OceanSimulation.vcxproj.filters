@@ -38,12 +38,6 @@
     <None Include="Shaders\sky_vshader.glsl">
       <Filter>Resource Files\Shaders</Filter>
     </None>
-    <None Include="Shaders\vshader.glsl">
-      <Filter>Resource Files\Shaders</Filter>
-    </None>
-    <None Include="Shaders\fshader.glsl">
-      <Filter>Resource Files\Shaders</Filter>
-    </None>
     <None Include="Shaders\skymap_fshader.glsl">
       <Filter>Resource Files\Shaders</Filter>
     </None>
@@ -54,6 +48,12 @@
       <Filter>Resource Files\Shaders</Filter>
     </None>
     <None Include="Shaders\water_fshader.glsl">
+      <Filter>Resource Files\Shaders</Filter>
+    </None>
+    <None Include="Shaders\ocean_vshader.glsl">
+      <Filter>Resource Files\Shaders</Filter>
+    </None>
+    <None Include="Shaders\ocean_fshader.glsl">
       <Filter>Resource Files\Shaders</Filter>
     </None>
   </ItemGroup>

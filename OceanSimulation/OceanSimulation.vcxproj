@@ -94,12 +94,12 @@
     <ClCompile Include="SkyBox.cpp" />
   </ItemGroup>
   <ItemGroup>
-    <None Include="Shaders\fshader.glsl" />
+    <None Include="Shaders\ocean_fshader.glsl" />
+    <None Include="Shaders\ocean_vshader.glsl" />
     <None Include="Shaders\skymap_fshader.glsl" />
     <None Include="Shaders\skymap_vshader.glsl" />
     <None Include="Shaders\sky_fshader.glsl" />
     <None Include="Shaders\sky_vshader.glsl" />
-    <None Include="Shaders\vshader.glsl" />
     <None Include="Shaders\water_fshader.glsl" />
     <None Include="Shaders\water_vshader.glsl" />
   </ItemGroup>

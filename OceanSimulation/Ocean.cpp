@@ -285,7 +285,7 @@ void Ocean::SetupRender()
     glBufferData(GL_ELEMENT_ARRAY_BUFFER, numIndices * sizeof(unsigned int), indices, GL_DYNAMIC_DRAW);
 
 #if (TEXTURE)
-    program = init_program("Shaders\\vshader.glsl", "Shaders\\fshader.glsl");
+    program = init_program("Shaders\\ocean_vshader.glsl", "Shaders\\ocean_fshader.glsl");
     camLoc = glGetUniformLocation(program, "cameraPosition");
 #else
     program = init_program("Shaders\\water_vshader.glsl", "Shaders\\water_fshader.glsl");
