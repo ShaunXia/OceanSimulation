@@ -1,6 +1,7 @@
 #include "GLFundamentals.hpp"
 #include "GLDemonstration.hpp"
 #include "Ocean.h"
+#include "SkyBox.h"
 
 using namespace gl;
 

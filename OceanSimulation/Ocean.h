@@ -4,11 +4,7 @@
 #include <random>
 #include <cmath>
 #include "GLFundamentals.hpp"
-#include "GLDemonstration.hpp"
 #include "fftw3.h"
-#include "SkyBox.h"
-
-#pragma once
 
 using std::complex;
 using namespace gl;
