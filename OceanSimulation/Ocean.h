@@ -31,7 +31,6 @@ protected:
     complex<float>* AmplitudeNought;
     complex<float>* AmplitudeNoughtConjugate;
     complex<float>* SlopeX;
-    complex<float>* SlopeY;
     complex<float>* SlopeZ;
     complex<float>* DispX;
     complex<float>* DispZ;

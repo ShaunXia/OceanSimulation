@@ -27,7 +27,6 @@ WindDir(windDir), Time(10), numIndices(0), g(9.81), lambda(1.5), WindSpeed(32), 
     AmplitudeNought = new complex<float>[(N + 1) * (M + 1)];
     Amplitudes = new complex<float>[N*M];
     SlopeX = new complex<float>[N*M];
-    SlopeY = new complex<float>[N*M];
     SlopeZ = new complex<float>[N*M];
     DispX = new complex<float>[N*M];
     DispZ = new complex<float>[N*M];
@@ -155,8 +154,8 @@ void Ocean::GenerateCoefficients()
 
             Amplitudes[arrIndex] = FourierAmplitude(i, j, waveVec);
             SlopeX[arrIndex] = Amplitudes[arrIndex] * complex<float>(0, waveVec[0]);
-            SlopeY[arrIndex] = Amplitudes[arrIndex] * complex<float>(0, waveVec[1]);
             SlopeZ[arrIndex] = Amplitudes[arrIndex] * complex<float>(0, waveVec[2]);
+
             if (waveNumber < Suppressor)
             {
                 DispX[arrIndex] = DispZ[arrIndex] = complex<float>(0.0, 0.0);
@@ -192,7 +191,6 @@ void Ocean::GenerateVertices()
 
     ComputeIFFT(Amplitudes, N, M);
     ComputeIFFT(SlopeX, N, M);
-    ComputeIFFT(SlopeY, N, M);
     ComputeIFFT(SlopeZ, N, M);
     ComputeIFFT(DispX, N, M);
     ComputeIFFT(DispZ, N, M);
@@ -221,7 +219,7 @@ void Ocean::GenerateVertices()
             vertices[vertIndex].displacedPosition[2] = original[2] + lambda * std::abs(DispZ[arrIndex]);
 
             //Calculate normals
-            vec3 slopeVec = vec3(std::abs(SlopeX[arrIndex]), std::abs(SlopeY[arrIndex]), std::abs(SlopeZ[arrIndex]));
+            vec3 slopeVec = vec3(std::abs(SlopeX[arrIndex]), 0.0, std::abs(SlopeZ[arrIndex]));
             //vertices[vertIndex].normal = (vec3(0.0, 1.0, 0.0) - slopeVec);
             vertices[vertIndex].normal = (vec3(0.0, 1.0, 0.0) - slopeVec) / sqrt(1 + slopeVec*slopeVec);
 
@@ -251,7 +249,7 @@ void Ocean::GenerateVertices()
             vertices[arrIndex].displacedPosition[2] = original[2] + lambda * std::abs(DispZ[arrIndex]);
 
             //Calculate normals
-            vec3 slopeVec = vec3(std::abs(SlopeX[arrIndex]), std::abs(SlopeY[arrIndex]), std::abs(SlopeZ[arrIndex]));
+            vec3 slopeVec = vec3(std::abs(SlopeX[arrIndex]), 0.0, std::abs(SlopeZ[arrIndex]));
             //vertices[arrIndex].normal = (vec3(0.0, 1.0, 0.0) - slopeVec);
             vertices[arrIndex].normal = (vec3(0.0, 1.0, 0.0) - slopeVec) / sqrt(1 + slopeVec*slopeVec);
 #endif
@@ -286,7 +284,7 @@ void Ocean::SetupRender()
     projectionLoc = glGetUniformLocation(program, "Projection");
     viewLoc = glGetUniformLocation(program, "View");
 #if (TILE)
-    glUniform4fv(glGetUniformLocation(program, "LightPosition"), 1, vec4(3 * L / 4, 40.0, -3 * L / 4, 0.0));
+    glUniform4fv(glGetUniformLocation(program, "LightPosition"), 1, vec4(3 * (float) L/4, 40.0, -3 * (float) L/4, 1.0));
 #else
     glUniform4fv(glGetUniformLocation(program, "LightPosition"), 1, vec4(-L/2, 40.0, L/2, 0.0));
 #endif
